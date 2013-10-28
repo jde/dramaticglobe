@@ -26,7 +26,8 @@
 
     .land {
       fill: rgba(0,0,0,.5);
-      stroke: none;
+      stroke: rgba(1,1,1,1);
+      stroke-width: .5;
     }
 
     .selected {
@@ -87,7 +88,7 @@
 */
 
   // draw world paths
-  d3.json("data/world-100m.json", function(error, world) {
+  d3.json("data/world-110m.json", function(error, world) {
     svg.append("path")
         .datum(topojson.feature(world, world.objects.land))
         .attr("class", "land")
