@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body {
+  margin: 0;
+}
+
+.background {
+  fill: #bee8ff;
+}
+
+.foreground {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 1.5px;
+}
+
+.graticule {
+  fill: none;
+  stroke: #aaa;
+  stroke-width: .5px;
+}
+
+.land {
+  fill: #b7db6e;
+  stroke: #4f6521;
+}
+
+.boundary {
+  fill: none;
+  stroke: #7b9545;
+}
+
+.tissot {
+  fill: rgba(255,0,0,0.5);
+  stroke: none;
+}
+
+</style>
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+
+var radians = Math.PI / 180.0;
+
+var width = window.innerWidth,
+    height = window.innerHeight;
+
+var projection = d3.geo.orthographic()
+    .scale(Math.min(width,height)*0.45)
+    .translate([width / 2 - .5, height / 2 - .5])
+    .rotate([-30,-30])
+    .clipAngle(180 + 1e-6);
+
+var path = d3.geo.path()
+    .projection(projection);
+
+var graticule = d3.geo.graticule().step([30,30]);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+svg.append("path")
+    .datum(graticule.outline)
+    .attr("class", "background")
+    .attr("d", path);
+
+svg.selectAll(".graticule")
+    .data(graticule.lines)
+  .enter().append("path")
+    .attr("class", "graticule")
+    .attr("d", path);
+
+svg.append("path")
+    .datum(graticule.outline)
+    .attr("class", "foreground")
+    .attr("d", path);
+
+d3.json("data/world-100m.json", function(error, collection) {
+  svg.insert("path", ".graticule")
+      .datum(collection)
+      .attr("class", "boundary")
+      .attr("d", path);
+});
+
+d3.json("data/world-100m.json", function(error, collection) {
+  svg.insert("path", ".graticule,.boundary")
+      .datum(collection)
+      .attr("class", "land")
+      .attr("d", path);
+});
+
+var indicatices = d3.merge(d3.range(-180,181,30).map(function(lon) { 
+  return d3.range(-60,61,30).map(function(lat) { 
+    return d3.geo.circle().origin([ lon, lat ]).angle(7.0)();
+  }); 
+}));
+
+svg.selectAll("path.tissot")
+    .data(indicatices)
+  .enter().append("path")
+    .attr("class", "tissot")
+    .attr("d", path);
+
+</script>

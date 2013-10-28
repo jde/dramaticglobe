@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<head>
+
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <script src="http://d3js.org/topojson.v1.min.js"></script>
+
+  <style>
+
+    #container {
+      margin: 0 auto;
+      width: 500px;
+      height: 600px;
+
+      overflow: hidden;
+
+      text-align: right;
+
+    }
+
+    .bureau {
+      fill: rgba(255, 128, 0, 1);
+      stroke: none;
+    }
+
+    .land {
+      fill: rgba(0,0,0,.5);
+      stroke: none;
+    }
+
+
+  </style>
+</head>
+<body>
+
+
+  <div id="container">
+    <h1>Thompson Reuters</h1>
+    <p>International news etc...<p>
+    <div id="bureau">
+    </div>
+  </div>
+
+  <script>
+
+  var bureaus = [],
+      bureauShapes = [];
+
+  var bureauInfo = document.getElementById("bureau");
+
+  var width = 960,
+      height = 500;
+
+  var projection = d3.geo.orthographic()
+      .scale(450)
+      .translate([100, 500])
+      .clipAngle(90);
+
+  var path = d3.geo.path()
+      .projection(projection);
+
+  var svg = d3.select("#container").append("svg")
+      .attr("width", width)
+      .attr("height", height)
+      .attr("id", "globe");
+
+/*
+
+  var λ = d3.scale.linear()
+      .domain([0, width])
+      .range([-180, 180]);
+
+  var φ = d3.scale.linear()
+      .domain([0, height])
+      .range([90, -90]);
+
+  svg.on("mousemove", function() {
+    var p = d3.mouse(this);
+    projection.rotate([λ(p[0]), φ(p[1])]);
+    svg.selectAll("path").attr("d", path);
+  });
+*/
+
+  // draw world paths
+  d3.json("data/world-100m.json", function(error, world) {
+    svg.append("path")
+        .datum(topojson.feature(world, world.objects.land))
+        .attr("class", "land")
+        .attr("d", path);
+  });
+
+  // draw bureaus
+  d3.csv("data/tr-bureaus-ll.csv", function (d) {
+    return {
+      latitude: Number(d.latitude),
+      longitude: Number(d.longitude),
+      name: d.desc
+    }
+  }, function (error, rows) {
+
+    bureaus = rows;
+
+    bureauShapes = rows.map(function(r) { 
+      return d3.geo.circle().origin([ r.longitude, r.latitude]).angle(1.0)();
+    });
+
+    svg.selectAll("path.tissot")
+        .data(bureauShapes)
+      .enter().append("path")
+        .attr("class", "bureau")
+        .attr("d", path)
+        .attr("id", name);
+
+  });
+
+
+  var moveTo = function () {
+
+    var to = bureaus[Math.floor(Math.random() * bureaus.length)];
+
+    projection.rotate([-to.longitude + 40, -to.latitude + 40]);
+
+    svg.selectAll("path").attr("d", path);
+
+    bureauInfo.innerHTML = to.name;
+
+    console.log(to);
+
+  };
+
+  setInterval(moveTo, 4000);
+
+
+
+  </script>
+</body>
+</html>
