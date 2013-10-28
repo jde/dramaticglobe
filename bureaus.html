@@ -29,6 +29,10 @@
       stroke: none;
     }
 
+    .selected {
+      fill: rgba(128, 255, 0, 1);      
+    }
+
 
   </style>
 </head>
@@ -93,6 +97,7 @@
   // draw bureaus
   d3.csv("data/tr-bureaus-ll.csv", function (d) {
     return {
+      id: Number(d.id),
       latitude: Number(d.latitude),
       longitude: Number(d.longitude),
       name: d.desc
@@ -102,7 +107,9 @@
     bureaus = rows;
 
     bureauShapes = rows.map(function(r) { 
-      return d3.geo.circle().origin([ r.longitude, r.latitude]).angle(1.0)();
+      var polygon = d3.geo.circle().origin([ r.longitude, r.latitude]).angle(1.0)();
+      polygon.data = r; // is this a hack or brilliance?
+      return polygon;
     });
 
     svg.selectAll("path.tissot")
@@ -110,22 +117,33 @@
       .enter().append("path")
         .attr("class", "bureau")
         .attr("d", path)
-        .attr("id", name);
+        .attr("id", function (b) { return "bureau"+b.data.id}); // brilliance
 
   });
 
 
   var moveTo = function () {
 
-    var to = bureaus[Math.floor(Math.random() * bureaus.length)];
-
-    projection.rotate([-to.longitude + 40, -to.latitude + 40]);
-
-    svg.selectAll("path").attr("d", path);
+    var newId = Math.floor(Math.random() * bureaus.length);
+    var to = bureaus[newId-1];
 
     bureauInfo.innerHTML = to.name;
 
-    console.log(to);
+    projection.rotate([-to.longitude + 40, -to.latitude + 40]);
+
+    svg.selectAll("path")
+        .attr("d", path)
+        .attr("class", function (b) {
+
+          if (! b.data) {
+            return "land";
+          }
+
+          if (b.data.id === newId) {
+            return "bureau selected";
+          }
+          return "bureau";
+        });
 
   };
 
