@@ -70,23 +70,6 @@
       .attr("height", height)
       .attr("id", "globe");
 
-/*
-
-  var λ = d3.scale.linear()
-      .domain([0, width])
-      .range([-180, 180]);
-
-  var φ = d3.scale.linear()
-      .domain([0, height])
-      .range([90, -90]);
-
-  svg.on("mousemove", function() {
-    var p = d3.mouse(this);
-    projection.rotate([λ(p[0]), φ(p[1])]);
-    svg.selectAll("path").attr("d", path);
-  });
-*/
-
   // draw world paths
   d3.json("data/world-110m.json", function(error, world) {
     svg.append("path")
@@ -125,30 +108,60 @@
 
   var moveTo = function () {
 
-    var newId = Math.floor(Math.random() * bureaus.length);
-    var to = bureaus[newId-1];
+    var newId = Math.floor(Math.random() * bureaus.length)-1;
+    var to = bureaus[newId];
 
     bureauInfo.innerHTML = to.name;
 
-    projection.rotate([-to.longitude + 40, -to.latitude + 40]);
 
-    svg.selectAll("path")
-        .attr("d", path)
-        .attr("class", function (b) {
+    d3.transition()
+        .duration(2500)
+        .tween("rotate", function() {
+          var p = d3.geo.centroid(bureauShapes[newId]),
+              r = d3.interpolate(projection.rotate(), [-p[0] + 40, -p[1] + 40]);
+          
+          return function(t) {
 
-          if (! b.data) {
-            return "land";
-          }
+            projection.rotate(r(t));
 
-          if (b.data.id === newId) {
-            return "bureau selected";
-          }
-          return "bureau";
-        });
+            svg.selectAll("path")
+              .attr("d", path)
+              .attr("class", function (b) {
+
+                if (! b.data) {
+                  return "land";
+                }
+
+                if (t > .9 && b.data.id === newId+1) {
+                  return "bureau selected";
+                }
+                return "bureau";
+              });
+
+          };
+        })
+      .transition();
 
   };
 
   setInterval(moveTo, 4000);
+
+/*
+  // this code rotates the globe on mousemove
+  var λ = d3.scale.linear()
+      .domain([0, width])
+      .range([-180, 180]);
+
+  var φ = d3.scale.linear()
+      .domain([0, height])
+      .range([90, -90]);
+
+  svg.on("mousemove", function() {
+    var p = d3.mouse(this);
+    projection.rotate([λ(p[0]), φ(p[1])]);
+    svg.selectAll("path").attr("d", path);
+  });
+*/
 
 
 
