@@ -20,18 +20,20 @@
     }
 
     .bureau {
-      fill: rgba(255, 128, 0, 1);
-      stroke: none;
+      fill: #fff;
+      stroke: #f80;
+      stroke-width: 1;
+      -webkit-transition: all 2.5s;
     }
 
     .land {
-      fill: rgba(0,0,0,.5);
-      stroke: rgba(1,1,1,1);
-      stroke-width: .5;
+      fill: #DEDEEF;
+      stroke: none;
     }
 
     .selected {
-      fill: rgba(128, 255, 0, 1);      
+      fill: #f80;
+      -webkit-transition: all 2.5s;
     }
 
 
@@ -57,6 +59,13 @@
   var width = 960,
       height = 500;
 
+  var mapData, bureauData;
+
+  var shapes, paths;
+
+  var dataSources = 0, 
+      dataLoaded = 0;
+
   var projection = d3.geo.orthographic()
       .scale(450)
       .translate([100, 500])
@@ -71,14 +80,18 @@
       .attr("id", "globe");
 
   // draw world paths
+  dataSources++;
   d3.json("data/world-110m.json", function(error, world) {
-    svg.append("path")
-        .datum(topojson.feature(world, world.objects.land))
-        .attr("class", "land")
-        .attr("d", path);
+
+    mapData = world;
+
+    dataLoaded++;
+    start();
+
   });
 
   // draw bureaus
+  dataSources++;
   d3.csv("data/tr-bureaus-ll.csv", function (d) {
     return {
       id: Number(d.id),
@@ -88,63 +101,83 @@
     }
   }, function (error, rows) {
 
-    bureaus = rows;
+    bureauData = rows;
 
-    bureauShapes = rows.map(function(r) { 
-      var polygon = d3.geo.circle().origin([ r.longitude, r.latitude]).angle(1.0)();
-      polygon.data = r; // is this a hack or brilliance?
-      return polygon;
-    });
-
-    svg.selectAll("path.tissot")
-        .data(bureauShapes)
-      .enter().append("path")
-        .attr("class", "bureau")
-        .attr("d", path)
-        .attr("id", function (b) { return "bureau"+b.data.id}); // brilliance
+    dataLoaded++;
+    start();
 
   });
 
 
   var moveTo = function () {
 
-    var newId = Math.floor(Math.random() * bureaus.length)-1;
-    var to = bureaus[newId];
+    var newId = Math.floor(Math.random() * bureauData.length)-1;
+    var to = bureauData[newId];
 
     bureauInfo.innerHTML = to.name;
 
-
+    // rotate globe
     d3.transition()
         .duration(2500)
         .tween("rotate", function() {
           var p = d3.geo.centroid(bureauShapes[newId]),
               r = d3.interpolate(projection.rotate(), [-p[0] + 40, -p[1] + 40]);
-          
+
           return function(t) {
 
             projection.rotate(r(t));
-
-            svg.selectAll("path")
-              .attr("d", path)
-              .attr("class", function (b) {
-
-                if (! b.data) {
-                  return "land";
-                }
-
-                if (t > .9 && b.data.id === newId+1) {
-                  return "bureau selected";
-                }
-                return "bureau";
-              });
+            paths.attr("d", path);
 
           };
         })
       .transition();
 
+
+    // animate selected circle
+
+    d3.select("#bureau" + (newId+1))
+        .attr("class", "selected")
+        .transition()
+        .duration(2500);
+
+
+
   };
 
-  setInterval(moveTo, 4000);
+
+  var start = function () {
+
+    if (dataLoaded !== dataSources) {
+      return;
+    }
+
+    // draw the map
+    svg.append("path")
+        .datum(topojson.feature(mapData, mapData.objects.land))
+        .attr("class", "land")
+        .attr("d", path);
+
+
+    // draw the bureaus
+    bureauShapes = bureauData.map(function(r) { 
+      var polygon = d3.geo.circle().origin([ r.longitude, r.latitude]).angle(1.0)();
+      polygon.data = r; // is this a hack or brilliance?
+      return polygon;
+    });
+
+    svg.selectAll()
+        .data(bureauShapes)
+          .enter().append("path")
+          .attr("class", "bureau")
+          .attr("d", path)
+          .attr("id", function (b) { return "bureau"+b.data.id}); // brilliance
+
+    // CACHE ALL THE THINGS!!!
+    paths = svg.selectAll("path");
+
+    setInterval(moveTo, 3000);
+ 
+  }
 
 /*
   // this code rotates the globe on mousemove
