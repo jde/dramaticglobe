@@ -24,13 +24,17 @@
     }
 
     #globe {
-      margin-top: 82px;
+      margin-top: 100px;
     }
 
     #bureau {
       position: absolute;
-      top: 36px;
-      right: 12px;
+      top: 100px;
+      right: 18px;
+
+      font-size: 1.5em;
+      color: #f80;
+
     }
 
     .bureau {
@@ -68,7 +72,8 @@
   var containerSelector = "#api_ad_container";
 
   var bureaus = [],
-      bureauShapes = [];
+      bureauShapes = [],
+      selectedBureau;
 
   var bureauInfo = document.getElementById("bureau");
 
@@ -130,8 +135,16 @@
 
   var moveTo = function () {
 
-    var newId = Math.floor(Math.random() * bureauData.length)-1;
-    var to = bureauData[newId];
+    // strip selected from the current bureau
+    if (typeof selectedBureau !== "undefined") {
+      document.getElementById("bureau"+selectedBureau).className = "bureau";
+
+      console.log(document.getElementById("bureau"+selectedBureau));
+      console.log("bureau"+selectedBureau);
+    }
+
+    selectedBureau = Math.floor(Math.random() * bureauData.length);
+    var to = bureauData[selectedBureau];
 
     bureauInfo.innerHTML = to.name;
 
@@ -139,7 +152,7 @@
     d3.transition()
         .duration(2500)
         .tween("rotate", function() {
-          var p = d3.geo.centroid(bureauShapes[newId]),
+          var p = d3.geo.centroid(bureauShapes[selectedBureau+1]),
               r = d3.interpolate(projection.rotate(), [-p[0] + 40, -p[1] + 40]);
 
           return function(t) {
@@ -154,7 +167,7 @@
 
     // animate selected circle
 
-    d3.select("#bureau" + (newId+1))
+    d3.select("#bureau" + (selectedBureau))
         .attr("class", "selected")
         .transition()
         .duration(2500);
