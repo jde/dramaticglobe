@@ -17,7 +17,7 @@
 
       text-align: right;
 
-      background-image: url('assets/reuters_worldnews_expanded.png');
+      background: url('assets/reuters_worldnews_expanded.png') no-repeat;
 
       position: relative;
 
@@ -38,22 +38,36 @@
     }
 
     .bureau {
-      fill: #f80;
+      fill: #de760e;
       stroke: #f80;
       stroke-width: 0;
       -webkit-transition: all 2.5s;
     }
 
     .land {
-      fill: #DEDEEF;
+      fill: #E4E4E4;
       stroke: none;
     }
 
     .selected {
-      fill: #f80;
+      fill: #de760e;
       stroke: #fff;
       stroke-width: 2;
       -webkit-transition: all 2.5s;
+    }
+
+    #ticker {
+      position: absolute;
+      bottom: 0px;
+      width: 500px;
+      height: 29px;
+      margin-top: 590px;
+
+      background-color: #E4E4E4;
+
+      text-align: center;
+      font-size:1.5em;
+
     }
 
 
@@ -65,7 +79,9 @@
   <div id="api_ad_container">
     <div id="bureau">
     </div>
-  </div>
+    <div id="ticker">
+    </div>
+   </div>
 
   <script>
 
@@ -89,6 +105,22 @@
 
   var dataSources = 0, 
       dataLoaded = 0;
+
+  var tickerText = [
+    'More than 2,700 journalists in nearly 200 bureaus',
+    '20 different languages',
+    'We reach over one billion people',
+    '30 million users of the Reuters web sites and iPhone and iPad apps each month',
+    '2.1 million unique news stories',
+    '930,000 news alerts',
+    '680,000 pictures and images',
+    '100,000 video stories',
+    '21,000 interviews', 
+    '7,000 company, industry and political analyses', 
+    '160 investigative reports',
+    '400 expert columns on market, economy and politics'
+  ],
+      tickerDuration = 1500;
 
   var projection = d3.geo.orthographic()
       .scale(450)
@@ -174,6 +206,20 @@
 
   };
 
+
+  /*
+    Ticker
+  */
+  var ticker = document.getElementById('ticker'),
+      tickCount = 0;
+
+  function tick() {
+    tickCount = tickCount % tickerText.length;
+    ticker.innerHTML = tickerText[tickCount];
+    tickCount ++;
+    setTimeout(tick, tickerDuration);
+  }
+  tick();
 
   /*
     Interactivity
