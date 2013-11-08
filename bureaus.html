@@ -41,7 +41,8 @@
       padding: 8px;
       background: #265483;
       color: #fff;
-      text-decoration: none;    
+      text-decoration: none;   
+      cursor: pointer; 
 
     }
 
@@ -223,10 +224,10 @@
     expanded = ! expanded;
 
     if (expanded) {
-      return contract();
+      return expand();
     }
 
-    return expand();
+    return contract();
 
   };
   $button.on("click", expandContract);
@@ -251,7 +252,7 @@
 
     $button.html("&laquo; EXPAND");
     $ticker.hide();
-    
+
   };
   contract();
 
