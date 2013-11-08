@@ -5,11 +5,18 @@
 
   <script src="http://d3js.org/d3.v3.min.js"></script>
   <script src="http://d3js.org/topojson.v1.min.js"></script>
+  <script src="jquery.js"></script>
 
   <style>
 
-    #api_ad_container {
+    #api_ad_wrapper {
+      position: relative;
       margin: 0 auto;
+      width: 300px;
+      height: 600px;
+    }
+
+    #api_ad_container {
       width: 300px;
       height: 600px;
 
@@ -19,7 +26,22 @@
 
       background: url('assets/reuters_worldnews.png') no-repeat;
 
-      position: relative;
+      position: absolute;
+      top: 0px;
+      left: 0px;
+
+    }
+
+    #api_ad_button {
+
+      position: absolute;
+      z-index: 1000;
+      top: 10px;
+      right: 10px;
+      padding: 8px;
+      background: #265483;
+      color: #fff;
+      text-decoration: none;    
 
     }
 
@@ -34,7 +56,7 @@
       margin-top: 100px;
     }
 
-    #bureau {
+    #api_ad_bureau {
       position: absolute;
       top: 375px;
       right: 18px;
@@ -63,7 +85,7 @@
       -webkit-transition: all 2.5s;
     }
 
-    #ticker {
+    #api_ad_ticker {
       position: absolute;
       bottom: 0px;
       width: 100%;
@@ -82,13 +104,16 @@
 </head>
 <body>
 
-
-  <div id="api_ad_container">
-    <div id="bureau">
+  <div id="api_ad_wrapper">
+    <div id="api_ad_container">
+      <div id="api_ad_button">
+      </div>
+      <div id="api_ad_bureau">
+      </div>
+      <div id="api_ad_ticker">
+      </div>
     </div>
-    <div id="ticker">
-    </div>
-   </div>
+  </div>
 
   <script>
 
@@ -98,7 +123,12 @@
       bureauShapes = [],
       selectedBureau;
 
-  var bureauInfo = document.getElementById("bureau");
+  var $container = $(containerSelector),
+      $bureau = $("#api_ad_bureau"),
+      $ticker = $("#api_ad_ticker"),
+      $button = $("#api_ad_button");
+
+  var expanded = false;
 
   var width = 960,
       height = 500;
@@ -114,19 +144,19 @@
       dataLoaded = 0;
 
   var tickerText = [
-    'More than 2,700 journalists in nearly 200 bureaus',
-    '20 different languages',
-    'We reach over one billion people',
-    '30 million monthly users',
-    '2.1 million unique news stories',
-    '930,000 news alerts',
-    '680,000 pictures and images',
-    '100,000 video stories',
-    '21,000 interviews', 
-    '7,000 company, industry and political analyses', 
-    '160 investigative reports',
-    '400 expert columns on market, economy and politics'
-  ],
+        'More than 2,700 journalists in nearly 200 bureaus',
+        '20 different languages',
+        'We reach over one billion people',
+        '30 million monthly users',
+        '2.1 million unique news stories',
+        '930,000 news alerts',
+        '680,000 pictures and images',
+        '100,000 video stories',
+        '21,000 interviews', 
+        '7,000 company, industry and political analyses', 
+        '160 investigative reports',
+        '400 expert columns on market, economy and politics'
+      ],
       tickerDuration = 1500;
 
   var projection = d3.geo.orthographic()
@@ -186,6 +216,45 @@
     });
   };
 
+  // expand and contract the ad unit
+
+  var expandContract = function () {
+
+    expanded = ! expanded;
+
+    if (expanded) {
+      return contract();
+    }
+
+    return expand();
+
+  };
+  $button.on("click", expandContract);
+
+  var expand = function () {
+
+    $container.animate({
+      left: '-200px',
+      width: '500px'
+    }, 400);
+
+    $button.html("CONTRACT &raquo;");
+    $ticker.show();
+
+  };
+  var contract = function () {
+
+    $container.animate({
+      left: '0px',
+      width: '300px'
+    }, 400);
+
+    $button.html("&laquo; EXPAND");
+    $ticker.hide();
+    
+  };
+  contract();
+
   // rotate the globe to a bureau
   var moveTo = function () {
 
@@ -198,7 +267,7 @@
     selectedBureau = Math.floor(Math.random() * bureauData.length);
     var to = bureauData[selectedBureau];
 
-    bureauInfo.innerHTML = to.name;
+    $bureau.html(to.name);
 
     // rotate globe
     d3.transition()
@@ -235,7 +304,7 @@
 
   function tick() {
     tickCount = tickCount % tickerText.length;
-    ticker.innerHTML = tickerText[tickCount];
+    $ticker.html(tickerText[tickCount]);
     tickCount ++;
     setTimeout(tick, tickerDuration);
   }
@@ -265,7 +334,7 @@
     animationInterval = setInterval(moveTo, animationDuration);
   }
   var stopAnimation = function() {
-    bureauInfo.innerHTML = "";
+    $bureau.html("");
     clearInterval(animationInterval);
   }
 
