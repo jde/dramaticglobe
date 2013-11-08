@@ -10,16 +10,23 @@
 
     #api_ad_container {
       margin: 0 auto;
-      width: 500px;
+      width: 300px;
       height: 600px;
 
       overflow: hidden;
 
       text-align: right;
 
-      background: url('assets/reuters_worldnews_expanded.png') no-repeat;
+      background: url('assets/reuters_worldnews.png') no-repeat;
 
       position: relative;
+
+    }
+
+    .expanded {
+
+      width: 500px;
+      background: url('assets/reuters_worldnews_expanded.png') no-repeat;
 
     }
 
@@ -29,10 +36,10 @@
 
     #bureau {
       position: absolute;
-      top: 100px;
+      top: 375px;
       right: 18px;
 
-      font-size: 1.5em;
+      font-size: 1.2em;
       color: #f80;
 
     }
@@ -52,14 +59,14 @@
     .selected {
       fill: #de760e;
       stroke: #fff;
-      stroke-width: 2;
+      stroke-width: 0;
       -webkit-transition: all 2.5s;
     }
 
     #ticker {
       position: absolute;
       bottom: 0px;
-      width: 500px;
+      width: 100%;
       height: 29px;
       margin-top: 590px;
 
@@ -98,7 +105,7 @@
 
   var mapData, bureauData;
 
-  var shapes, paths;
+  var shapes, paths, lat, lng;
 
   var animationDuration = 3000,
       animationInterval;
@@ -165,14 +172,27 @@
   });
 
 
+  // spin the globe
+  var rotate = [10, -10],
+      velocity = [.003, -.001],
+      time = Date.now();
+
+  var spin = function () {
+
+     d3.timer(function() {
+      var dt = Date.now() - time;
+      projection.rotate([rotate[0] + velocity[0] * dt, rotate[1] + velocity[1] * dt]);
+      paths.attr("d", path);
+    });
+  };
+
+  // rotate the globe to a bureau
   var moveTo = function () {
 
     // strip selected from the current bureau
     if (typeof selectedBureau !== "undefined") {
       document.getElementById("bureau"+selectedBureau).className = "bureau";
 
-      console.log(document.getElementById("bureau"+selectedBureau));
-      console.log("bureau"+selectedBureau);
     }
 
     selectedBureau = Math.floor(Math.random() * bureauData.length);
@@ -185,7 +205,7 @@
         .duration(2500)
         .tween("rotate", function() {
           var p = d3.geo.centroid(bureauShapes[selectedBureau+1]),
-              r = d3.interpolate(projection.rotate(), [-p[0] + 40, -p[1] + 40]);
+              r = d3.interpolate(projection.rotate(), [-p[0] + 10, -p[1] + 40]);
 
           return function(t) {
 
@@ -245,6 +265,7 @@
     animationInterval = setInterval(moveTo, animationDuration);
   }
   var stopAnimation = function() {
+    bureauInfo.innerHTML = "";
     clearInterval(animationInterval);
   }
 
