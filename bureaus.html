@@ -36,12 +36,10 @@
 
       position: absolute;
       z-index: 1000;
-      top: 10px;
-      right: 10px;
-      padding: 8px;
-      background: #265483;
-      color: #fff;
-      text-decoration: none;   
+      top: 18px;
+      right: 0px;
+      padding: 0px;
+
       cursor: pointer; 
 
     }
@@ -230,7 +228,7 @@
     return contract();
 
   };
-  $button.on("click", expandContract);
+  $container.on("click", expandContract);
 
   var expand = function () {
 
@@ -239,7 +237,7 @@
       width: '500px'
     }, 400);
 
-    $button.html("CONTRACT &raquo;");
+    $button.html('<img src="assets/cta_collapse.png" />');
     $ticker.show();
 
   };
@@ -250,7 +248,7 @@
       width: '300px'
     }, 400);
 
-    $button.html("&laquo; EXPAND");
+    $button.html('<img src="assets/cta_expand.png" />');
     $ticker.hide();
 
   };
